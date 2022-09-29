@@ -3,22 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace SceneChangeManager
+
+public enum SceneName
 {
-    public enum SceneName
-    {
-        MainMenu,
-        Option,
-        FlappyBird,
-    }
-    public class SceneChangeManager : MonoBehaviour
-    {
-       
+    MainMenu,
+    Test,
+    Game1,
+    FlappyBird,
+}
+public class SceneChangeManager : MonoBehaviour
+{
 
-        public void ChangeScene(SceneName p_sceneName)
-        {
-            SceneManager.LoadScene(p_sceneName.ToString());
-        }
-
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
     }
+    public void ChangeScene(SceneName p_sceneName)
+    {
+        SceneManager.LoadScene(p_sceneName.ToString());
+    }
+
 }

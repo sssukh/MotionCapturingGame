@@ -51,7 +51,7 @@ public class WallSpawner : MonoBehaviour
                 Transform currentWall_Transform = currentWall.Current.GetComponent<Transform>();
                 currentWall_Transform.Translate(-f_Wall_Speed, 0, 0);
             }
-            float currentTime = Time.deltaTime;
+           
             if (f_Timer > f_Wall_Interval)
             {
                 AddtoWalllist();

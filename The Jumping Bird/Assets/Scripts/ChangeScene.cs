@@ -3,23 +3,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-using SceneChangeManager;
+
 
 
 
 public class ChangeScene : MonoBehaviour
 {
-   public void ChangeSceneBtn()
+    public GameObject sceneChangeManager;
+
+    public void Awake()
+    {
+        sceneChangeManager = GameObject.Find("SceneChangeManager");
+        if(sceneChangeManager==null)
+        {
+            Debug.Log("Error : No SCM");
+        }
+    }
+    public void ChangeSceneBtn()
     {
         switch (this.gameObject.name)
         {
             case "StartBtn":
-                SceneManager.LoadScene("Start");
+                sceneChangeManager.GetComponent<SceneChangeManager>().ChangeScene(SceneName.Game1);
+                //sceneChangeManager.GetComponent<SceneChangeManager>().ChangeScene(SceneName.FlappyBird);
                 break;
-            case "OptionBtn":
-                SceneManager.LoadScene("Option");
+            case "TestBtn":
+                sceneChangeManager.GetComponent<SceneChangeManager>().ChangeScene(SceneName.Test);
                 break;
-            
+            case "BackBtn":
+                sceneChangeManager.GetComponent<SceneChangeManager>().ChangeScene(SceneName.MainMenu);
+                break;
+
         }
         
     }
