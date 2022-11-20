@@ -31,15 +31,28 @@ public enum Body
 
 public class UnityPipeServer : MonoBehaviour
 {
-    // 추가
     // 유저를 트래킹한 값을 적용할 모델 오브젝트
     private GameObject[] UserBody = new GameObject[14];
     // 파이프가 연결이 3초 이상 끊겨있을 경우 화면에 나타낼 신호 및 시간 측정
     private GameObject connectionLost;
     private float connectionLostTime = 0f;
 
-    private FileIOS fileios;
-    
+    // 게임 씬에 필요한 전역 변수들
+    public Fileios fileios = null;
+    private Scoreeffect scoreEffect = null;
+    public GameObject gameTimer = null;
+    public GameObject fileiosObject = null;
+    public GameObject effectObject = null;
+
+    // frame counter
+    private int frameCounter;
+    private float totalScore;
+
+    // path
+    string prePath = "/Assets/Contents";
+    string happy = "/SoHappy/SoHappy";
+    string heroes = "/HeroesTonight/HeroesTonight";
+
     // 유저를 트래킹해서 받아온 포인트 값들을 저장할 배열
     // private int[] publicBuffer;
     private float[] publicBuffer;
@@ -54,6 +67,10 @@ public class UnityPipeServer : MonoBehaviour
     private NamedPipeServerStream pipeServer;
     private Thread serverReadThread;
 
+    // 현재 씬 위치
+    private Scene curScene;
+
+
     // float 유저 input 리스트 조절하기
     public int xScale;
     public int yScale;
@@ -61,8 +78,15 @@ public class UnityPipeServer : MonoBehaviour
     public int xOffset;
     public int yOffset;
     // 각도를 구할 관절 그리고 관절과 이어진 양 끝점을 인자로 넣어서 각도를 구한다.
-    private float GetRadiabAngle(Body _first,Body _second, Body _middle)
+    private float GetAngle(Body _first,Body _second, Body _middle)
     {
+        // Debug.Log("check3");
+
+        if (publicBuffer[(int)_first * 2] < 0 || publicBuffer[(int)_second * 2] < 0 ||
+            publicBuffer[(int)_middle * 2] < 0 )
+        {
+            return -1f;
+        }
         Vector2 first = new Vector2(publicBuffer[(int)_first * 2], publicBuffer[(int)_first * 2 + 1]);
         Vector2 second = new Vector2(publicBuffer[(int)_second * 2], publicBuffer[(int)_second * 2 + 1]);
         Vector2 middle = new Vector2(publicBuffer[(int)_middle * 2], publicBuffer[(int)_middle * 2 + 1]);
@@ -82,32 +106,34 @@ public class UnityPipeServer : MonoBehaviour
     // 다음과 같은 순서로 인자로 받은 배열에 각도 값을 채운다.
     private void SetJointAngles(ref float[] _angles)
     {
+        // Debug.Log("check2");
+
         // 목            머리 - 목 - 오른쪽 어깨
-        _angles[0] = GetRadiabAngle(Body.Head, Body.RShoulder, Body.Neck);
+        _angles[0] = GetAngle(Body.Head, Body.RShoulder, Body.Neck);
 
         // 왼팔꿈치         왼손 - 왼팔꿈치 - 왼어깨      
-        _angles[1] = GetRadiabAngle(Body.LWrist, Body.LShoulder, Body.LElbow);
+        _angles[1] = GetAngle(Body.LWrist, Body.LShoulder, Body.LElbow);
 
         // 왼어깨          목 - 왼어깨 - 왼팔꿈치
-        _angles[2] = GetRadiabAngle(Body.Neck, Body.LElbow, Body.LShoulder);
+        _angles[2] = GetAngle(Body.Neck, Body.LElbow, Body.LShoulder);
 
         // 오른팔꿈치        오른손 - 오른팔꿈치 - 오른어깨
-        _angles[3] = GetRadiabAngle(Body.RWrist, Body.RShoulder, Body.RElbow);
+        _angles[3] = GetAngle(Body.RWrist, Body.RShoulder, Body.RElbow);
 
         // 오른어깨            목 - 오른어깨 - 오른팔꿈치
-        _angles[4] = GetRadiabAngle(Body.Neck, Body.RElbow, Body.RShoulder);
+        _angles[4] = GetAngle(Body.Neck, Body.RElbow, Body.RShoulder);
 
         // 왼무릎              왼골반 - 왼무릎 - 왼발
-        _angles[5] = GetRadiabAngle(Body.LHip, Body.LAnkle, Body.LKnee);
+        _angles[5] = GetAngle(Body.LHip, Body.LAnkle, Body.LKnee);
 
         // 왼골반              오른골반 - 왼골반 - 왼무릎
-        _angles[6] = GetRadiabAngle(Body.RHip, Body.LKnee, Body.LHip);
+        _angles[6] = GetAngle(Body.RHip, Body.LKnee, Body.LHip);
 
         // 오른무릎             오른골반 - 오른무릎 - 오른발
-        _angles[7] = GetRadiabAngle(Body.RHip, Body.RAnkle, Body.RKnee);
+        _angles[7] = GetAngle(Body.RHip, Body.RAnkle, Body.RKnee);
 
         // 오른골반             왼골반 - 오른골반 - 오른무릎
-        _angles[8] = GetRadiabAngle(Body.LHip, Body.RKnee, Body.RHip);
+        _angles[8] = GetAngle(Body.LHip, Body.RKnee, Body.RHip);
     }
 
     private void Awake()
@@ -130,9 +156,64 @@ public class UnityPipeServer : MonoBehaviour
 
         serverReadThread = new Thread(ServerThread_Read);
         serverReadThread.Start();
+
+        frameCounter = 0;
+
+
+        curScene = SceneManager.GetActiveScene();
+
+
+        // 게임 씬 세팅 임시
+        //EnterScene("Game1",prePath,happy);
+
     }
 
 
+    public void EnterScene(string _sceneName,string _prePath="",string _content = "")
+    {
+        curScene = SceneManager.GetActiveScene();
+
+        if (_sceneName==SceneName.Game1.ToString())
+        {
+            /*
+            GameObject[] lists = GameObject.FindObjectsOfType<GameObject>();
+            Debug.LogError(lists.Length);
+            for(int i=0;i<lists.Length;++i)
+            {
+                Debug.LogError(lists[i].name);
+            }
+            */
+            gameTimer = GameObject.Find("Timer");
+            
+            fileiosObject = GameObject.Find("Fileios");
+            
+            effectObject = GameObject.Find("Effect");
+            
+
+            scoreEffect = effectObject.GetComponent<Scoreeffect>();
+            fileios = fileiosObject.GetComponent<Fileios>();
+
+            // 파일 확장자 없이 되있음. 확장자도 추가할 것.
+            Time.timeScale = 0f;
+
+            gameTimer.GetComponent<GameTimer>().PreparingTime();
+
+            gameTimer.GetComponent<GameTimer>().ResumeGame();
+
+        }
+    }
+    
+    public void ExitScene(string _sceneName)
+    {
+        if (_sceneName == SceneName.Game1.ToString())
+        {
+            gameTimer = null;
+            fileiosObject = null;
+            effectObject = null;
+            fileios = null;
+            scoreEffect = null;
+        }
+    }
 
     // 서버 쓰레드에서 파이프 연결
     private void ServerThread_Read()
@@ -143,13 +224,12 @@ public class UnityPipeServer : MonoBehaviour
     }
 
     // 제대로 추적되지 않는 포인트 출력제외, 각 씬에 맞는 출력부분 처리하기
-    private void ControllRenderPoints(int _offsetX, int _offsetY)
+    private void ControllRenderPoints(int _offsetX, int _offsetY,string _curSceneName)
     {
         // 현재 씬이 어떤 씬인지 추적
         bool isTesting;
-        Scene curScene = SceneManager.GetActiveScene();
         // Debug.Log(curScene.name);
-        if (curScene.name == "Test")
+        if (_curSceneName == "Test")
             isTesting = true;
         else
             isTesting = false;
@@ -159,7 +239,7 @@ public class UnityPipeServer : MonoBehaviour
             for (int i = 0; i < (int)Body.End; ++i)
             {
                 // NaN 일 시 해당 포인트 출력하지 않기
-                if (publicBuffer[2 * i] == Single.NaN || publicBuffer[2 * i + 1] == Single.NaN)
+                if (publicBuffer[2 * i] <0 || publicBuffer[2 * i + 1] <0)
                 {
                     UserBody[i].SetActive(false);
                 }
@@ -178,7 +258,7 @@ public class UnityPipeServer : MonoBehaviour
                         //Debug.Log("isnotTesting");
                     }
                 }
-                if (publicBuffer[2 * i] != Single.NaN || publicBuffer[2 * i + 1] != Single.NaN)
+                if (publicBuffer[2 * i] >0 || publicBuffer[2 * i + 1] >0)
                 {
                     publicBuffer[2 * i] -= _offsetX;
                     publicBuffer[2 * i + 1] -= _offsetY;
@@ -189,7 +269,7 @@ public class UnityPipeServer : MonoBehaviour
         {
             for (int i = 0; i < (int)Body.End; ++i)
             {
-                if ((i==(int)Body.RWrist||i==(int)Body.LWrist) && publicBuffer[2 * i] != Single.NaN && publicBuffer[2 * i + 1] != Single.NaN)
+                if ((i==(int)Body.RWrist||i==(int)Body.LWrist) && publicBuffer[2 * i] >0 && publicBuffer[2 * i + 1] >0)
                 {
                     UserBody[i].SetActive(true);
                 }
@@ -197,7 +277,7 @@ public class UnityPipeServer : MonoBehaviour
                 {
                     UserBody[i].SetActive(false);
                 }
-                if (publicBuffer[2 * i] != Single.NaN || publicBuffer[2 * i + 1] != Single.NaN)
+                if (publicBuffer[2 * i] >0 || publicBuffer[2 * i + 1] >0)
                 {
                     publicBuffer[2 * i] -= _offsetX;
                     publicBuffer[2 * i + 1] -= _offsetY;
@@ -255,7 +335,11 @@ public class UnityPipeServer : MonoBehaviour
 
                 
 
-                ControllRenderPoints(xOffset, yOffset);
+                ControllRenderPoints(xOffset, yOffset,curScene.name);
+
+                // 게임 씬에서 작동
+                InGameScene(curScene.name);
+
 
                 for (int i = (int)Body.Head; i < (int)Body.End; ++i)
                 {
@@ -293,6 +377,7 @@ public class UnityPipeServer : MonoBehaviour
             else if(connectionLostTime>=3.0f)
             {
                 serverReadThread.Interrupt();
+                // serverReadThread.Abort();
                 Debug.Log("Close Connection");
             }
 
@@ -314,8 +399,66 @@ public class UnityPipeServer : MonoBehaviour
             // 오차값들 result에 더하기
             result += Math.Abs(userData - fileData) / 180f;
             count++;
+            Debug.Log("result : " + result);
         }
         return 100 - (result/count);
     }
 
+
+    void InGameScene(string _curSceneName)
+    {
+        if (_curSceneName != "Game1")
+        {
+            // return;
+        }
+       
+        Debug.Log("check1");
+        // write
+        SetJointAngles(ref userAnglesBuffer);
+        //fileios.bWrite(gameTimer.GetComponent<GameTimer>().getTimer(), ref userAnglesBuffer);
+
+        // read
+        fileios.bRead(fileAngleBuffer.Length, gameTimer.GetComponent<GameTimer>().getTimer(), ref fileAngleBuffer);
+        float score = checkScore(ref userAnglesBuffer, ref fileAngleBuffer);
+        Debug.Log("Score : " + score);
+        totalScore += score;
+        if (frameCounter >= 30)
+        {
+            frameCounter = 0;
+            // 30프레임동안 점수 평균내기
+            float average = totalScore / 30f;
+            totalScore = 0;
+            int num;
+            // 이펙트 화면에 나타내기
+            if (average>80)
+            {
+                // great
+                num = 3;
+            }
+            else if(average>60)
+            {
+                // good
+                num = 2;
+            }
+            else if(average>40)
+            {
+                // not bad
+                num = 1;
+            }
+            else
+            {
+                // bad
+                num = 0;
+            }
+            scoreEffect.JudgementEffect(num);
+        }
+        else
+        {
+            frameCounter++;
+        }
+
+
+    }
+
+    
 }

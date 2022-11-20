@@ -8,12 +8,22 @@ using UnityEngine;
 using UnityEngine.Experimental.Playables;
 
 
+
+
+
 // 게임플레이하는 동안 파일을 읽어오는 기능
 // deltatime에 맞춰서 읽어서 sync를 맞추도록 한다.
-public class FileIOS : MonoBehaviour
+public class Fileios : MonoBehaviour
 {
-    private string fileName = "test.bin";
-    
+    public string fileName = "test.bin";
+    private string prePath = "/Assets/Contents";
+    private string happy = "/SoHappy/SoHappy.bin";
+    private string heroes = "/HeroesTonight/HeroesTonight.bin";
+    // Assets/Contents/SoHappy/Raven & Kreyn - So Happy[NCS Release].mp3
+    // Assets/Contents/SoHappy/SoHappy.jpg
+    // Assets/Contents/HeroesTonight/Janji - Heroes Tonight (feat. Johnning) [NCS Release].mp3
+    // Assets/Contents/HeroesTonight/HeroesTonightCover.jpg
+
     FileStream fs;
     BinaryWriter binaryWriter;
     BinaryReader binaryReader;
@@ -22,14 +32,15 @@ public class FileIOS : MonoBehaviour
     void Start()
     {
         // fs = new FileStream(fileName, FileMode.OpenOrCreate,FileAccess.ReadWrite);
-        binaryWriter = new BinaryWriter(fs);
-        binaryReader = new BinaryReader(fs);
+        setFileName(fileName);
+        createWriter();
+        createReader();
     }
 
     // Update is called once per frame
     
     // 전달받은 array 작성
-    void bWrite(float _deltaTime, ref float[] _array)
+    public void bWrite(float _deltaTime, ref float[] _array)
     {
         // deltatime 작성
         binaryWriter.Write(_deltaTime);
@@ -50,7 +61,7 @@ public class FileIOS : MonoBehaviour
     }
 
     // array의 길이만큼 읽어온다.
-    void bRead(int _arrayLength, float _deltaTime, ref float[] floatResult)
+    public void bRead(int _arrayLength, float _deltaTime, ref float[] floatResult)
     {
         float var1;
         byte[] byteBuffer = new byte[_arrayLength*4];
@@ -81,6 +92,7 @@ public class FileIOS : MonoBehaviour
                     */
                     // float값으로 변환
                     Buffer.BlockCopy(byteBuffer, 0, floatBuffer, 0, byteBuffer.Length);
+                    
                     /*
                     for(int idx=0;idx<floatBuffer.Length;idx++)
                     {
@@ -93,11 +105,15 @@ public class FileIOS : MonoBehaviour
                 else
                 {
                     // 현재 프레임 시간값 읽어올 수 있도록 이전으로 돌리기
-                    fs.Seek(-1, SeekOrigin.Current);
+                    // 시간 4byte, 데이터 9개 * 4byte = 36byte
+                    fs.Seek(-40, SeekOrigin.Current);
 
                     // 읽어온 값 넣어주기.
                     floatResult = floatBuffer;
-
+                    for (int i = 0; i < floatBuffer.Length; ++i)
+                    {
+                        Debug.Log(floatBuffer[i]);
+                    }
                     return;
                 }
                
