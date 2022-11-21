@@ -135,25 +135,25 @@ public class Fileios : MonoBehaviour
             }
         }
     }
-    void setFileName(string _filename)
+    public void setFileName(string _filename)
     {
         fileName = _filename;
         fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
     }
    
-    void createWriter()
+    public void createWriter()
     {
         binaryWriter = new BinaryWriter(fs);
     }
-    void createReader()
+    public void createReader()
     {
         binaryReader = new BinaryReader(fs);
     }
-    void deleteWriter()
+    public void deleteWriter()
     {
         binaryWriter.Close();
     }
-    void deleteReader()
+    public void deleteReader()
     {
         binaryReader.Close();
     }

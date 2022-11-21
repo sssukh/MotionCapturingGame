@@ -152,13 +152,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d8d83bef5231a140a39faefed78b3da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fileios: {fileID: 0}
   gameTimer: {fileID: 0}
   fileiosObject: {fileID: 0}
   effectObject: {fileID: 0}
   xScale: 200
   yScale: 600
-  xOffset: 0
-  yOffset: 0
+  xOffset: 100
+  yOffset: 300
 --- !u!4 &15456446
 Transform:
   m_ObjectHideFlags: 0
@@ -1364,7 +1365,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1184037634}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0fb87937276b2a946805adf4261fb59e, type: 3}
   m_Name: 

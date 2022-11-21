@@ -145,6 +145,7 @@ public class UnityPipeServer : MonoBehaviour
     {
         // 파이프 초기화
         pipeServer = new NamedPipeServerStream("CSServer", PipeDirection.In);
+        Debug.Log("Opend pipe");
         // 파이프 연결끊김 표시할 오브젝트 
         connectionLost = GameObject.Find("connectionLostSymbol");
         connectionLost.SetActive(false);
@@ -162,9 +163,7 @@ public class UnityPipeServer : MonoBehaviour
 
         curScene = SceneManager.GetActiveScene();
 
-
-        // 게임 씬 세팅 임시
-        //EnterScene("Game1",prePath,happy);
+        Debug.Log("Start Ended!!!");
 
     }
 
@@ -199,7 +198,6 @@ public class UnityPipeServer : MonoBehaviour
             gameTimer.GetComponent<GameTimer>().PreparingTime();
 
             gameTimer.GetComponent<GameTimer>().ResumeGame();
-
         }
     }
     
@@ -227,12 +225,17 @@ public class UnityPipeServer : MonoBehaviour
     private void ControllRenderPoints(int _offsetX, int _offsetY,string _curSceneName)
     {
         // 현재 씬이 어떤 씬인지 추적
+        // 임시로 true
         bool isTesting;
         // Debug.Log(curScene.name);
+
+        // 임시로 주석처리
+        
         if (_curSceneName == "Test")
             isTesting = true;
         else
             isTesting = false;
+        
 
         if (isTesting)
         {
@@ -242,6 +245,8 @@ public class UnityPipeServer : MonoBehaviour
                 if (publicBuffer[2 * i] <0 || publicBuffer[2 * i + 1] <0)
                 {
                     UserBody[i].SetActive(false);
+                    publicBuffer[2 * i] = 0;
+                    publicBuffer[2 * i + 1] = 0;
                 }
                 else
                 {
@@ -276,6 +281,8 @@ public class UnityPipeServer : MonoBehaviour
                 else
                 {
                     UserBody[i].SetActive(false);
+                    publicBuffer[2 * i] = 0;
+                    publicBuffer[2 * i + 1] = 0;
                 }
                 if (publicBuffer[2 * i] >0 || publicBuffer[2 * i + 1] >0)
                 {
@@ -288,6 +295,7 @@ public class UnityPipeServer : MonoBehaviour
 
     void Update()
     {
+        //Debug.Log("updating....");
         if (pipeServer.IsConnected)
         {
             connectionLostTime = 0f;
@@ -306,6 +314,7 @@ public class UnityPipeServer : MonoBehaviour
 
                 for (int idx = 0; idx < 36; ++idx)
                 {
+                    Debug.LogWarning("idx : " + (float)fBuffer[idx]);
                     // NaN일 시 건드리지 않기
                     if (fBuffer[idx] == Single.NaN)
                     {
@@ -367,6 +376,7 @@ public class UnityPipeServer : MonoBehaviour
                 connectionLost.SetActive(true);
             }
 
+            /*
             // 서버가 연결되어있지 않고 쓰레드가 죽어있으면 서버연결 쓰레드 실행
             if(!serverReadThread.IsAlive)
             {
@@ -380,7 +390,7 @@ public class UnityPipeServer : MonoBehaviour
                 // serverReadThread.Abort();
                 Debug.Log("Close Connection");
             }
-
+            */
         }
     }
 
@@ -409,12 +419,13 @@ public class UnityPipeServer : MonoBehaviour
     {
         if (_curSceneName != "Game1")
         {
-            // return;
+            return;
         }
        
         Debug.Log("check1");
-        // write
+
         SetJointAngles(ref userAnglesBuffer);
+        // write
         //fileios.bWrite(gameTimer.GetComponent<GameTimer>().getTimer(), ref userAnglesBuffer);
 
         // read
@@ -460,5 +471,8 @@ public class UnityPipeServer : MonoBehaviour
 
     }
 
-    
+    ~UnityPipeServer()
+    {
+        pipeServer.Close();
+    }
 }
