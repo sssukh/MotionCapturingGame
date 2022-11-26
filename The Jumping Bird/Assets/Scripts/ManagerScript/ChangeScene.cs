@@ -11,7 +11,7 @@ public class ChangeScene : MonoBehaviour
 {
     public GameObject sceneChangeManager;
 
-    string prePath = "/Assets/Contents";
+    string prePath = "Assets/Contents";
     string happy = "/SoHappy/SoHappy";
     string heroes = "/HeroesTonight/HeroesTonight";
 

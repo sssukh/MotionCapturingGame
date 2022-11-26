@@ -39,7 +39,7 @@ public class MenuManager : MonoBehaviour
         StartCoroutine(PauseAfterDelay());
         MainCam.GetComponent<CameraManager>().MaskOn();
         
-        GameTimer.GetComponent<GameTimer>().PauseGame();
+        GameTimer.GetComponent<GameTimer>().PauseTime();
        
         //PauseMenu.SetActive(true);
        

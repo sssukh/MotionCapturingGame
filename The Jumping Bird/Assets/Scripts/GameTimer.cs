@@ -12,12 +12,19 @@ public class GameTimer : MonoBehaviour
     [SerializeField]
     private Sprite[] timeCounts;
 
+    [SerializeField]
+    private GameObject audioManagerObject = null;
+
+    private AudioManager audioManager = null;
+
     private Image thisImage;
 
     void Start()
     {
         gameTimer = 0f;
         thisImage = GetComponent<Image>();
+        audioManagerObject = GameObject.Find("Audio");
+        audioManager = audioManagerObject.GetComponent<AudioManager>();
     }
     private void Update()
     {
@@ -28,10 +35,11 @@ public class GameTimer : MonoBehaviour
 
     public float getTimer() { return gameTimer; }
 
-    public void PauseGame()
+    public void PauseTime()
     {
         Debug.LogError("Pause");
         Time.timeScale = 0f;
+        audioManager.MusicStop();
     }
     public void ResumeGame()
     {
@@ -47,7 +55,7 @@ public class GameTimer : MonoBehaviour
     private IEnumerator PrepTime()
     {
         //gameObject.SetActive(true);
-        PauseGame();
+        PauseTime();
 
         thisImage.color = new Color(255,255,255,255);
         thisImage.sprite = timeCounts[0];
@@ -60,6 +68,7 @@ public class GameTimer : MonoBehaviour
 
         ResumeGame();
 
+        audioManager.MusicPlay();
     }
     /*
     public void PrepareTime()

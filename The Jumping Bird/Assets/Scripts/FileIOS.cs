@@ -15,8 +15,9 @@ using UnityEngine.Experimental.Playables;
 // deltatime에 맞춰서 읽어서 sync를 맞추도록 한다.
 public class Fileios : MonoBehaviour
 {
+    // E:\Unity\Projects\My project\Assets\Contents\SoHappy
     public string fileName = "test.bin";
-    private string prePath = "/Assets/Contents";
+    private string prePath = "Assets/Contents";
     private string happy = "/SoHappy/SoHappy.bin";
     private string heroes = "/HeroesTonight/HeroesTonight.bin";
     // Assets/Contents/SoHappy/Raven & Kreyn - So Happy[NCS Release].mp3
@@ -112,7 +113,7 @@ public class Fileios : MonoBehaviour
                     floatResult = floatBuffer;
                     for (int i = 0; i < floatBuffer.Length; ++i)
                     {
-                        Debug.Log(floatBuffer[i]);
+                        Debug.Log("file value returned : " + floatBuffer[i]);
                     }
                     return;
                 }
@@ -138,9 +139,11 @@ public class Fileios : MonoBehaviour
     public void setFileName(string _filename)
     {
         fileName = _filename;
-        fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+        //fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+        fs = new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite);
+
     }
-   
+
     public void createWriter()
     {
         binaryWriter = new BinaryWriter(fs);
