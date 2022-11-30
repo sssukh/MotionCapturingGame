@@ -9,7 +9,7 @@ public enum SceneName
     MainMenu,
     Test,
     Game1,
-    FlappyBird,
+    ScoreResult,
 }
 
 public class SceneChangeManager : MonoBehaviour
@@ -23,9 +23,9 @@ public class SceneChangeManager : MonoBehaviour
     {
         pipeServer = GameObject.Find("UserInput");
     }
-    public void ChangeScene(SceneName p_sceneName,string _prePath="",string _content="")
+    public void ChangeScene(SceneName p_sceneName,string _prePath="",string _content="",float _score = 0)
     {
-        StartCoroutine(LoadAsyncScene(p_sceneName, _prePath, _content));
+        StartCoroutine(LoadAsyncScene(p_sceneName, _prePath, _content,_score));
         /*
         // 각 씬에서 나가면서 안쓰는 것들 제거
         pipeServer.GetComponent<UnityPipeServer>().ExitScene(p_sceneName.ToString());
@@ -37,7 +37,7 @@ public class SceneChangeManager : MonoBehaviour
         */
     }
 
-    public IEnumerator LoadAsyncScene(SceneName p_sceneName, string _prePath, string _content)
+    public IEnumerator LoadAsyncScene(SceneName p_sceneName, string _prePath, string _content, float _score)
     {
         // 각 씬에서 나가면서 안쓰는 것들 제거
         pipeServer.GetComponent<UnityPipeServer>().ExitScene(p_sceneName.ToString());
@@ -48,7 +48,7 @@ public class SceneChangeManager : MonoBehaviour
             yield return null;
         }
         // 각 씬에 진입하면서 필요한 것들 세팅
-        pipeServer.GetComponent<UnityPipeServer>().EnterScene(p_sceneName.ToString(), _prePath, _content);
+        pipeServer.GetComponent<UnityPipeServer>().EnterScene(p_sceneName.ToString(), _prePath, _content,_score);
     }
 
 }

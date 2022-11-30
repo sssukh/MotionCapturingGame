@@ -152,8 +152,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d8d83bef5231a140a39faefed78b3da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sceneChangeManagerObj: {fileID: 1818126627}
   fileios: {fileID: 0}
-  gameTimer: {fileID: 0}
+  gameTimerObj: {fileID: 0}
   fileiosObject: {fileID: 0}
   effectObject: {fileID: 0}
   audioObject: {fileID: 0}
@@ -162,6 +163,7 @@ MonoBehaviour:
   xOffset: 100
   yOffset: 300
   frame_amounts: 60
+  musicIdx: 0
 --- !u!4 &15456446
 Transform:
   m_ObjectHideFlags: 0

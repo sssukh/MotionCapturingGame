@@ -33,11 +33,12 @@ public class Fileios : MonoBehaviour
     void Start()
     {
         // fs = new FileStream(fileName, FileMode.OpenOrCreate,FileAccess.ReadWrite);
-        setFileName(fileName);
-        createWriter();
-        createReader();
+        
     }
-
+    public void GetName()
+    {
+        Debug.LogError(fs.Name);
+    }
     // Update is called once per frame
     
     // 전달받은 array 작성
@@ -62,24 +63,27 @@ public class Fileios : MonoBehaviour
     }
 
     // array의 길이만큼 읽어온다.
-    public void bRead(int _arrayLength, float _deltaTime, ref float[] floatResult)
+    public void bRead(int _arrayLength, float _deltaTime, ref float[] floatResult, float _timeDiff)
     {
+        Debug.LogError("Binary Read called");
         float var1;
         byte[] byteBuffer = new byte[_arrayLength*4];
         float[] floatBuffer = new float[byteBuffer.Length / 4];
-        float timeDiff = 100;
+        // 시간 오차값
+        //_timeDiff = 100;
         while (true)
         {
-            
+            Debug.LogError("Binary Read while form");
             try
             {
                 // time 값 읽어오기
                 var1 = binaryReader.ReadSingle();
                 // 유저 프레임과 시간차가 이전 프레임보다 현재 프레임이 더 작을 때 
-                if (timeDiff>Mathf.Abs(_deltaTime-var1))
+                if (_timeDiff > Mathf.Abs(_deltaTime-var1))
                 {
+                    Debug.LogError("Time diff : " + Mathf.Abs(_deltaTime - var1));
                     // timeDiff 재설정
-                    timeDiff = Mathf.Abs(_deltaTime - var1);
+                    _timeDiff = Mathf.Abs(_deltaTime - var1);
 
 
                     // 리턴으로 buffer에 읽어온 byte의 개수를 리턴한다.
@@ -108,13 +112,11 @@ public class Fileios : MonoBehaviour
                     // 현재 프레임 시간값 읽어올 수 있도록 이전으로 돌리기
                     // 시간 4byte, 데이터 9개 * 4byte = 36byte
                     fs.Seek(-40, SeekOrigin.Current);
-
+                    GetName();
+                    Debug.LogError("time synchronized");
                     // 읽어온 값 넣어주기.
                     floatResult = floatBuffer;
-                    for (int i = 0; i < floatBuffer.Length; ++i)
-                    {
-                        Debug.Log("file value returned : " + floatBuffer[i]);
-                    }
+                    
                     return;
                 }
                
@@ -123,15 +125,15 @@ public class Fileios : MonoBehaviour
             {
                 // 끝에 도달하면 처음으로 돌아가기
                 fs.Seek(0, SeekOrigin.Begin);
-
+                
                 // 읽어온 값 넣어주기.
                 floatResult = floatBuffer;
-
+                Debug.LogError(e.Message);
                 break;
             }
             catch (Exception e)
             {
-                Debug.Log(e);
+                Debug.LogError(e.Message);
                 break;
             }
         }
@@ -151,6 +153,7 @@ public class Fileios : MonoBehaviour
     public void createReader()
     {
         binaryReader = new BinaryReader(fs);
+        fs.Seek(0, SeekOrigin.Begin);
     }
     public void deleteWriter()
     {

@@ -29,8 +29,18 @@ public enum Body
     End
 }
 
+public enum Music
+{
+    SoHappy,
+    HeroesTonight,
+}
+
+
 public class UnityPipeServer : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject sceneChangeManagerObj = null;
+
     // 유저를 트래킹한 값을 적용할 모델 오브젝트
     private GameObject[] UserBody = new GameObject[14];
     // 파이프가 연결이 3초 이상 끊겨있을 경우 화면에 나타낼 신호 및 시간 측정
@@ -40,11 +50,17 @@ public class UnityPipeServer : MonoBehaviour
     // 게임 씬에 필요한 전역 변수들
     public Fileios fileios = null;
     private Scoreeffect scoreEffect = null;
-    public GameObject gameTimer = null;
+    public GameObject gameTimerObj = null;
     public GameObject fileiosObject = null;
     public GameObject effectObject = null;
     public GameObject audioObject = null;
     private AudioManager audioManager = null;
+    private GameTimer gameTimer = null;
+    private SceneChangeManager sceneChangeManager = null;
+
+    // 결과 씬에 필요한 변수들
+    private GameObject scoreCounterObj = null;
+    private ScoreCounter scoreCounter = null;
 
     // frame counter
     private int frameCounter;
@@ -85,6 +101,8 @@ public class UnityPipeServer : MonoBehaviour
     private int frame_amounts = 60;
 
     private bool isServerConnected = false;
+
+    public int musicIdx;
 
     // 각도를 구할 관절 그리고 관절과 이어진 양 끝점을 인자로 넣어서 각도를 구한다.
     private float GetAngle(Body _first,Body _second, Body _middle)
@@ -192,12 +210,12 @@ public class UnityPipeServer : MonoBehaviour
 
         curScene = SceneManager.GetActiveScene();
 
-        Debug.Log("Start Ended!!!");
+        sceneChangeManager = sceneChangeManagerObj.GetComponent<SceneChangeManager>();
 
     }
 
 
-    public void EnterScene(string _sceneName,string _prePath="",string _content = "")
+    public void EnterScene(string _sceneName,string _prePath="",string _content = "",float _score=0f)
     {
         curScene = SceneManager.GetActiveScene();
 
@@ -211,7 +229,7 @@ public class UnityPipeServer : MonoBehaviour
                 Debug.LogError(lists[i].name);
             }
             */
-            gameTimer = GameObject.Find("Timer");
+            gameTimerObj = GameObject.Find("Timer");
             
             fileiosObject = GameObject.Find("Fileios");
             
@@ -219,25 +237,38 @@ public class UnityPipeServer : MonoBehaviour
 
             audioObject = GameObject.Find("Audio");
 
-
+            gameTimer = gameTimerObj.GetComponent<GameTimer>();
             scoreEffect = effectObject.GetComponent<Scoreeffect>();
             fileios = fileiosObject.GetComponent<Fileios>();
             fileios.setFileName(_prePath + _content + ".bin");
             audioManager = audioObject.GetComponent<AudioManager>();
 
             if (_content[1] == 'S')
+            {
                 audioManager.SetMusic(0);
+                musicIdx = (int)Music.SoHappy;
+            }
             else
+            { 
                 audioManager.SetMusic(1);
+                musicIdx = (int)Music.HeroesTonight;
+            }
 
-
+            fileios.GetName();
             fileios.createWriter();
             fileios.createReader();
             // 파일 확장자 없이 되있음. 확장자도 추가할 것.
             Time.timeScale = 0f;
 
-            gameTimer.GetComponent<GameTimer>().PreparingTime();
+            gameTimer.PreparingTime();
 
+        }
+        else if(_sceneName == SceneName.ScoreResult.ToString())
+        {
+            scoreCounterObj = GameObject.Find("ResultBackground");
+            scoreCounter = scoreCounterObj.GetComponent<ScoreCounter>();
+
+            scoreCounter.StartCount(_score);
         }
     }
     
@@ -246,6 +277,7 @@ public class UnityPipeServer : MonoBehaviour
         if (_sceneName == SceneName.Game1.ToString())
         {
             gameTimer = null;
+            gameTimerObj = null;
             fileiosObject = null;
             effectObject = null;
             fileios = null;
@@ -321,23 +353,16 @@ public class UnityPipeServer : MonoBehaviour
                 else
                 {
                     // test 씬이면 전부 출력
-                    if (isTesting)
-                    {
-                        UserBody[i].SetActive(true);
-                        //Debug.Log("isTesting");
-                    }
-                    // test 씬이 아니면 손만 출력
-                    else if (!isTesting && (i == (int)Body.LWrist || i == (int)Body.RWrist))
-                    {
-                        UserBody[i].SetActive(true);
-                        //Debug.Log("isnotTesting");
-                    }
+
+                    UserBody[i].SetActive(true);
+                    //Debug.Log("isTesting");
+                   
                 }
-                if (publicBuffer[2 * i] >0 || publicBuffer[2 * i + 1] >0)
-                {
-                    publicBuffer[2 * i] -= _offsetX;
-                    publicBuffer[2 * i + 1] -= _offsetY;
-                }
+                //if (publicBuffer[2 * i] >0 || publicBuffer[2 * i + 1] >0)
+                //{
+                //    publicBuffer[2 * i] -= _offsetX;
+                //    publicBuffer[2 * i + 1] -= _offsetY;
+                //}
             }
         }
         else
@@ -354,11 +379,11 @@ public class UnityPipeServer : MonoBehaviour
                     //publicBuffer[2 * i] = 0;
                     //publicBuffer[2 * i + 1] = 0;
                 }
-                if (publicBuffer[2 * i] >0 || publicBuffer[2 * i + 1] >0)
-                {
-                    publicBuffer[2 * i] -= _offsetX;
-                    publicBuffer[2 * i + 1] -= _offsetY;
-                }
+                //if (publicBuffer[2 * i] >0 || publicBuffer[2 * i + 1] >0)
+                //{
+                //    publicBuffer[2 * i] -= _offsetX;
+                //    publicBuffer[2 * i + 1] -= _offsetY;
+                //}
             }
         }
     }
@@ -409,10 +434,10 @@ public class UnityPipeServer : MonoBehaviour
                 }
                 */
                 publicBuffer = fBuffer;
-                for(int i=0;i<publicBuffer.Length;++i)
-                {
-                    Debug.LogWarning(i + " : " + (float)fBuffer[i] + " , public : " + (float)publicBuffer[i]);
-                }
+                //for(int i=0;i<publicBuffer.Length;++i)
+                //{
+                //    Debug.LogWarning(i + " : " + (float)fBuffer[i] + " , public : " + (float)publicBuffer[i]);
+                //}
                 Debug.Log("Read....");
 
                 
@@ -425,7 +450,7 @@ public class UnityPipeServer : MonoBehaviour
 
                 for (int i = (int)Body.Head; i < (int)Body.End; ++i)
                 {
-                    UserBody[i].GetComponent<RectTransform>().anchoredPosition = new Vector3(publicBuffer[2 * i], publicBuffer[(2 * i) + 1] * -1, 0);
+                    UserBody[i].GetComponent<RectTransform>().anchoredPosition = new Vector3(publicBuffer[2 * i]-xOffset, (publicBuffer[(2 * i) + 1] * -1 )- yOffset, 0);
                 }
 
             }
@@ -477,7 +502,7 @@ public class UnityPipeServer : MonoBehaviour
             float userData = _userArray[i];
             float fileData = _fileArray[i];
 
-            //Debug.Log("User : " + _userArray[i] + " , File : " + _fileArray[i]);
+            Debug.Log("User : " + _userArray[i] + " , File : " + _fileArray[i]);
 
             // NaN일 경우 비교 하지 않기
             if (userData < 0 || fileData < 0)
@@ -487,17 +512,23 @@ public class UnityPipeServer : MonoBehaviour
             count++;
             Debug.Log("result : " + result);
         }
-        return 100 - (result/count);
+        return 100 - (result/count)*100;
     }
 
 
     void InGameScene(string _curSceneName)
     {
+       
         if (_curSceneName != "Game1")
         {
             return;
         }
-       
+
+        if (gameTimer.IsMusicOver(musicIdx, 3f)&&!audioManager.IsPlaying())
+        {
+            sceneChangeManager.ChangeScene(SceneName.ScoreResult, "", "", 20000);
+        }
+
         Debug.Log("check1");
 
         SetJointAngles(ref userAnglesBuffer);
@@ -509,9 +540,13 @@ public class UnityPipeServer : MonoBehaviour
         //fileios.bWrite(gameTimer.GetComponent<GameTimer>().getTimer(), ref userAnglesBuffer);
 
         // read
-        fileios.bRead(fileAngleBuffer.Length, gameTimer.GetComponent<GameTimer>().getTimer(), ref fileAngleBuffer);
+        fileios.bRead(fileAngleBuffer.Length, gameTimer.GetComponent<GameTimer>().getTimer(), ref fileAngleBuffer,100f);
+        //for(int i=0;i<fileAngleBuffer.Length;++i)
+        //{
+        //    Debug.LogWarning("file " + i + " : " + fileAngleBuffer[i]);
+        //}
         float score = checkScore(ref userAnglesBuffer, ref fileAngleBuffer);
-      
+
         Debug.Log("Score : " + score);
         totalScore += score;
         if (frameCounter >= frame_amounts)

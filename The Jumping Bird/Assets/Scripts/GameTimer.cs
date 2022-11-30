@@ -19,12 +19,14 @@ public class GameTimer : MonoBehaviour
 
     private Image thisImage;
 
+    private float[] MusicTime;
     void Start()
     {
         gameTimer = 0f;
         thisImage = GetComponent<Image>();
         audioManagerObject = GameObject.Find("Audio");
         audioManager = audioManagerObject.GetComponent<AudioManager>();
+        MusicTime = new float[2] { 161f, 208f };
     }
     private void Update()
     {
@@ -32,6 +34,10 @@ public class GameTimer : MonoBehaviour
     }
     // Update is called once per frame
 
+    public bool IsMusicOver(int _musicIdx,float _secOffset)
+    {
+        return gameTimer > MusicTime[_musicIdx] + _secOffset;
+    }
 
     public float getTimer() { return gameTimer; }
 
