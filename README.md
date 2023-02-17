@@ -3,7 +3,7 @@ Project for college graduation
 컴퓨터 종합설계
 진행사항 - https://www.notion.so/047b82bcab714931a004b84d5f16613e?pvs=4
 
-코드 위치 : 
+코드 위치 : https://github.com/sssukh/MocapScripts/tree/master/Scripts
 
 모션캡쳐를 활용해서 유저의 움직임을 실시간으로 가져와서
 화면에 나오는 댄서의 움직임과의 유사도를 통해 점수를 얻는 게임입니다.
