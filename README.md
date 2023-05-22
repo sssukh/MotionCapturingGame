@@ -1,7 +1,7 @@
 # MotionCapturingGame
 Project for college graduation
 컴퓨터 종합설계
-진행사항 - [https://www.notion.so/047b82bcab714931a004b84d5f16613e?pvs=4](https://sneaky-beam-afe.notion.site/047b82bcab714931a004b84d5f16613e)
+진행사항 - https://sneaky-beam-afe.notion.site/047b82bcab714931a004b84d5f16613e
 
 코드 위치 : https://github.com/sssukh/MocapScripts/tree/master/Scripts
 
