@@ -20,4 +20,6 @@ Project for college graduation
 노래는 2가지 종류가 있고 각각 다른 춤을 춥니다.
 노래가 끝나면 점수화면이 나오게 됩니다.
 
+플레이 영상
+https://youtu.be/Vk-YywMpDpM
 
